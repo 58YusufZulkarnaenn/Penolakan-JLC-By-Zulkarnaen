@@ -11,34 +11,48 @@ st.set_page_config(page_title="App Penolakan Member", layout="wide")
 # --- KUSTOMISASI TAMPILAN (UI/UX) ---
 st.markdown("""
 <style>
-    /* Bikin tombol Submit dan Login jadi warna Biru dan lebih tebal */
-    div.stButton > button:first-child {
-        background-color: #0056b3;
-        color: white;
-        border-radius: 8px;
-        font-weight: bold;
-        border: none;
-        padding: 10px 24px;
-        transition: all 0.3s ease;
+    /* 1. Tombol Biasa dan Tombol Submit di dalam form WAJIB BIRU */
+    div.stButton > button, 
+    [data-testid="stForm"] button {
+        background-color: #0056b3 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        border: none !important;
+        padding: 10px 24px !important;
+        transition: all 0.3s ease !important;
     }
+
     /* Efek pas kursor ngelewatin tombol */
-    div.stButton > button:first-child:hover {
-        background-color: #004494;
-        color: white;
-        transform: scale(1.02);
+    div.stButton > button:hover, 
+    [data-testid="stForm"] button:hover {
+        background-color: #004494 !important;
+        color: white !important;
+        transform: scale(1.02) !important;
     }
-    /* Bikin kotak Form lebih nimbul dan jelas batasnya */
+
+    /* 2. Bikin Kotak Form warnanya biru sangat muda dan garis luarnya tegas */
     [data-testid="stForm"] {
-        border: 2px solid #e6e6e6;
-        border-radius: 10px;
-        padding: 25px;
-        box-shadow: 3px 3px 15px rgba(0,0,0,0.1);
-        background-color: #fcfcfc;
+        border: 2px solid #9fbdd8 !important;
+        border-radius: 10px !important;
+        padding: 25px !important;
+        background-color: #f2f7fc !important; 
+        box-shadow: 3px 3px 15px rgba(0,0,0,0.1) !important;
     }
-    /* Bikin teks judul di sidebar lebih tebal */
+
+    /* 3. Bikin kotak input (kolom ketik & dropdown) putih bersih tapi garis pinggirnya abu-abu gelap biar gak nyaru */
+    input, 
+    div[data-baseweb="select"] > div, 
+    div[data-baseweb="input"] > div {
+        background-color: #ffffff !important;
+        border: 1.5px solid #a6b5c4 !important;
+        border-radius: 6px !important;
+    }
+
+    /* 4. Teks judul di sidebar */
     [data-testid="stSidebar"] h1 {
-        color: #0056b3;
-        font-weight: 800;
+        color: #0056b3 !important;
+        font-weight: 800 !important;
     }
 </style>
 """, unsafe_allow_html=True)
