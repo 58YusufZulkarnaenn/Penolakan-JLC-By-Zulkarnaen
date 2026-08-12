@@ -134,7 +134,8 @@ else:
                     "C. Tertarik, Tapi lagi buru buru",
                     "D. Tidak tertarik karena ribet",
                     "E. Belum tertarik karena jarang ngirim",
-                    "F. Lainnya... (isi sendiri)"
+                    "F. Sudah daftar, Tapi tidak ada email masuk",
+                    "G. Lainnya... (isi sendiri)"
                 ]
                 alasan = st.selectbox("Alasan Penolakan", opsi_alasan)
                 detail_alasan = st.text_input("Jika pilih 'Lainnya', ketik alasannya di sini:")
@@ -147,7 +148,7 @@ else:
                 if submit_resi:
                     if not no_resi:
                         st.warning("Nomor resi tidak boleh kosong!")
-                    elif alasan == "F. Lainnya... (isi sendiri)" and not detail_alasan:
+                    elif alasan == "G. Lainnya... (isi sendiri)" and not detail_alasan:
                         st.warning("Detail alasan harus diisi!")
                     else:
                         tz_jkt = pytz.timezone('Asia/Jakarta')
