@@ -40,7 +40,7 @@ if 'user_data' not in st.session_state:
 
 # --- HALAMAN LOGIN ---
 if not st.session_state.logged_in:
-    st.title("Login Sistem Penolakan Member")
+    st.title("Login Data Penolakan JLC")
     with st.form("login_form"):
         username_input = st.text_input("Username")
         password_input = st.text_input("Password", type="password")
@@ -84,7 +84,8 @@ else:
                     "B. Belum tertarik",
                     "C. Tertarik, Tapi lagi buru buru",
                     "D. Tidak tertarik karena ribet",
-                    "E. Lainnya... (isi sendiri)"
+                    "E. Tidak tertarik karena jarang ngirim"
+                    "F. Lainnya... (isi sendiri)"
                 ]
                 alasan = st.selectbox("Alasan Penolakan", opsi_alasan)
                 detail_alasan = st.text_input("Jika pilih 'Lainnya', ketik alasannya di sini:")
