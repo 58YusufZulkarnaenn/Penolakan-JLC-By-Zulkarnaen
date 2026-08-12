@@ -76,11 +76,8 @@ else:
         menu = st.sidebar.radio("Pilih Menu", ["Input Resi Baru", "Riwayat Input Gua"])
         
         if menu == "Input Resi Baru":
-            st.header("Input Data Penolakan")
-            with st.form("input_resi", clear_on_submit=True):
-                # Barcode scanner otomatis ngetik di sini
-                no_resi = st.text_input("Nomor Resi (Bisa pakai Scanner)", help="Arahkan kursor ke sini lalu scan barcode")
-                
+            st.header("Input Data Penolakan JLC")
+            with st.form("input_resi", clear_on_submit=True):                
                 # Opsi Alasan
                 opsi_alasan = [
                     "A. Lagi buru-buru",
@@ -91,6 +88,9 @@ else:
                 ]
                 alasan = st.selectbox("Alasan Penolakan", opsi_alasan)
                 detail_alasan = st.text_input("Jika pilih 'Lainnya', ketik alasannya di sini:")
+
+                # Barcode scanner otomatis ngetik di sini
+                no_resi = st.text_input("Nomor Resi (Bisa pakai Scanner)", help="Arahkan kursor ke sini lalu scan barcode")
                 
                 submit_resi = st.form_submit_button("Submit Data")
                 
