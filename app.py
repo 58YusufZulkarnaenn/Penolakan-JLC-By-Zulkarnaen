@@ -8,6 +8,41 @@ import pytz
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="App Penolakan Member", layout="wide")
 
+# --- KUSTOMISASI TAMPILAN (UI/UX) ---
+st.markdown("""
+<style>
+    /* Bikin tombol Submit dan Login jadi warna Biru dan lebih tebal */
+    div.stButton > button:first-child {
+        background-color: #0056b3;
+        color: white;
+        border-radius: 8px;
+        font-weight: bold;
+        border: none;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+    }
+    /* Efek pas kursor ngelewatin tombol */
+    div.stButton > button:first-child:hover {
+        background-color: #004494;
+        color: white;
+        transform: scale(1.02);
+    }
+    /* Bikin kotak Form lebih nimbul dan jelas batasnya */
+    [data-testid="stForm"] {
+        border: 2px solid #e6e6e6;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 3px 3px 15px rgba(0,0,0,0.1);
+        background-color: #fcfcfc;
+    }
+    /* Bikin teks judul di sidebar lebih tebal */
+    [data-testid="stSidebar"] h1 {
+        color: #0056b3;
+        font-weight: 800;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # --- KONEKSI KE GOOGLE SHEETS ---
 def get_google_sheet():
     # Mengambil kredensial dari st.secrets
