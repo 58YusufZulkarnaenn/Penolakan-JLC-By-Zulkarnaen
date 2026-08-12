@@ -129,11 +129,11 @@ else:
             with st.form("input_resi", clear_on_submit=True):                
                 # Opsi Alasan
                 opsi_alasan = [
-                    "A. Lagi buru-buru",
+                    "A. Belum butuh",
                     "B. Belum tertarik",
                     "C. Tertarik, Tapi lagi buru buru",
                     "D. Tidak tertarik karena ribet",
-                    "E. Tidak tertarik karena jarang ngirim",
+                    "E. Belum tertarik karena jarang ngirim",
                     "F. Lainnya... (isi sendiri)"
                 ]
                 alasan = st.selectbox("Alasan Penolakan", opsi_alasan)
