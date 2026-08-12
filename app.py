@@ -84,7 +84,7 @@ else:
                     "B. Belum tertarik",
                     "C. Tertarik, Tapi lagi buru buru",
                     "D. Tidak tertarik karena ribet",
-                    "E. Tidak tertarik karena jarang ngirim"
+                    "E. Tidak tertarik karena jarang ngirim",
                     "F. Lainnya... (isi sendiri)"
                 ]
                 alasan = st.selectbox("Alasan Penolakan", opsi_alasan)
@@ -98,7 +98,7 @@ else:
                 if submit_resi:
                     if not no_resi:
                         st.warning("Nomor resi tidak boleh kosong!")
-                    elif alasan == "E. Lainnya... (isi sendiri)" and not detail_alasan:
+                    elif alasan == "F. Lainnya... (isi sendiri)" and not detail_alasan:
                         st.warning("Detail alasan harus diisi!")
                     else:
                         tz_jkt = pytz.timezone('Asia/Jakarta')
