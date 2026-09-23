@@ -12,7 +12,6 @@ st.set_page_config(page_title="App Penolakan Member", layout="wide")
 # --- KUSTOMISASI TAMPILAN (UI/UX) ---
 st.markdown("""
 <style>
-    /* 1. Tombol Biasa dan Tombol Submit di dalam form WAJIB BIRU */
     div.stButton > button, 
     [data-testid="stForm"] button {
         background-color: #0056b3 !important;
@@ -23,16 +22,12 @@ st.markdown("""
         padding: 10px 24px !important;
         transition: all 0.3s ease !important;
     }
-
-    /* Efek pas kursor ngelewatin tombol */
     div.stButton > button:hover, 
     [data-testid="stForm"] button:hover {
         background-color: #004494 !important;
         color: white !important;
         transform: scale(1.02) !important;
     }
-
-    /* 2. Bikin Kotak Form warnanya biru sangat muda dan garis luarnya tegas */
     [data-testid="stForm"] {
         border: 2px solid #9fbdd8 !important;
         border-radius: 10px !important;
@@ -40,8 +35,6 @@ st.markdown("""
         background-color: #f2f7fc !important; 
         box-shadow: 3px 3px 15px rgba(0,0,0,0.1) !important;
     }
-
-    /* 3. Bikin kotak input putih bersih tapi garis pinggirnya abu-abu gelap */
     input, 
     div[data-baseweb="select"] > div, 
     div[data-baseweb="input"] > div {
@@ -49,8 +42,6 @@ st.markdown("""
         border: 1.5px solid #a6b5c4 !important;
         border-radius: 6px !important;
     }
-
-    /* 4. Teks judul di sidebar */
     [data-testid="stSidebar"] h1 {
         color: #0056b3 !important;
         font-weight: 800 !important;
@@ -77,25 +68,20 @@ def get_worksheet(nama_sheet):
     return db.worksheet(nama_sheet)
 
 # =====================================================================
-# AMBIL DATA USER (UNTUK DROPDOWN SCO & LOGIN ADMIN)
+# AMBIL DATA USER
 # =====================================================================
-@st.cache_data(ttl=300)  # cache 5 menit
+@st.cache_data(ttl=300)
 def get_data_user():
     sheet_user = get_worksheet("DATA USER")
     return sheet_user.get_all_records()
 
 def get_daftar_sco():
-    """Ambil daftar SCO dari sheet DATA USER.
-    Return: list of dict {username, nama, label}
-    """
     data = get_data_user()
     daftar = []
     for user in data:
         if str(user.get('ROLE', '')).upper() == 'SCO':
             username = str(user.get('USERNAME', '')).strip()
             nama = str(user.get('NAMA SCO', '')).strip()
-            # Format: "ZKARNKRW (Yusuf Zulkarnaen)"
-            # Title case nama biar rapi
             nama_title = nama.title() if nama else username
             label = f"{username} ({nama_title})"
             daftar.append({
@@ -106,7 +92,6 @@ def get_daftar_sco():
     return daftar
 
 def login_admin(username, password):
-    """Login admin: cek username + password + role = ADMIN."""
     data = get_data_user()
     for user in data:
         if (str(user.get('USERNAME', '')) == username
@@ -114,6 +99,14 @@ def login_admin(username, password):
             and str(user.get('ROLE', '')).upper() == 'ADMIN'):
             return user
     return None
+
+# =====================================================================
+# FUNGSI CACHE DATA RESI (LEVEL ATAS — BISA DIAKSES SEMUA MENU)
+# =====================================================================
+@st.cache_data(ttl=60)
+def get_all_resi():
+    sheet_resi = get_worksheet("DATA RESI")
+    return pd.DataFrame(sheet_resi.get_all_records())
 
 # =====================================================================
 # STATE MANAGEMENT
@@ -128,13 +121,12 @@ if 'show_admin_login' not in st.session_state:
     st.session_state.show_admin_login = False
 
 # =====================================================================
-# HALAMAN LOGIN (PILIH NAMA SCO, TANPA PASSWORD)
+# HALAMAN LOGIN
 # =====================================================================
 if not st.session_state.logged_in:
     st.title("📦 Data Penolakan JLC")
-    st.caption("Pilih nama")
+    st.caption("Pilih nama lu, terus klik 'Masuk' buat mulai kerja.")
 
-    # Ambil daftar SCO dari sheet
     try:
         daftar_sco = get_daftar_sco()
     except Exception as e:
@@ -145,7 +137,6 @@ if not st.session_state.logged_in:
         st.warning("Belum ada SCO di sheet DATA USER.")
         st.stop()
 
-    # Cari index default = ZKARNKRW
     labels = [sco["label"] for sco in daftar_sco]
     default_idx = 0
     for i, sco in enumerate(daftar_sco):
@@ -153,20 +144,18 @@ if not st.session_state.logged_in:
             default_idx = i
             break
 
-    # Dropdown SCO
     pilihan_label = st.selectbox(
-        "Pilih Nama:",
+        "Pilih Nama Lu:",
         labels,
         index=default_idx,
         key="pilih_nama_sco"
     )
 
-    # Cari data SCO yang dipilih
     sco_terpilih = next((s for s in daftar_sco if s["label"] == pilihan_label), None)
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        if st.button("LOGIN", use_container_width=True, type="primary"):
+        if st.button("Masuk sebagai SCO", use_container_width=True, type="primary"):
             if sco_terpilih:
                 st.session_state.logged_in = True
                 st.session_state.is_admin = False
@@ -181,7 +170,6 @@ if not st.session_state.logged_in:
             st.session_state.show_admin_login = not st.session_state.show_admin_login
             st.rerun()
 
-    # Form login admin
     if st.session_state.show_admin_login:
         st.markdown("---")
         st.subheader("🔐 Login Admin")
@@ -202,7 +190,7 @@ if not st.session_state.logged_in:
                     st.error("Username atau Password admin salah!")
 
 # =====================================================================
-# HALAMAN UTAMA (SETELAH LOGIN)
+# HALAMAN UTAMA
 # =====================================================================
 else:
     user_info = st.session_state.user_data
@@ -227,15 +215,14 @@ else:
     if st.session_state.is_admin:
         menu = st.sidebar.radio("Pilih Menu", ["Dashboard Admin"])
     else:
-        menu = st.sidebar.radio("Pilih Menu", ["Input Resi Baru", "Riwayat Input"])
+        menu = st.sidebar.radio("Pilih Menu", ["Input Resi Baru", "Riwayat Input Gua"])
 
     # =================================================================
-    # MENU: INPUT RESI BARU (SCO)
+    # MENU: INPUT RESI BARU
     # =================================================================
     if menu == "Input Resi Baru":
         st.header("Input Data Penolakan JLC")
 
-        # === BLOK SCANNER KAMERA ===
         st.subheader("📷 Scan Barcode Resi")
         st.caption("Klik 'Mulai Scan' untuk nyalain kamera. Kamera otomatis mati setelah barcode kebaca.")
 
@@ -246,7 +233,6 @@ else:
             st.success(f"✅ Barcode terbaca: **{hasil_scan}**")
 
         st.markdown("---")
-        # === END BLOK SCANNER ===
 
         with st.form("input_resi", clear_on_submit=True):
             opsi_alasan = [
@@ -284,14 +270,14 @@ else:
                     sheet_resi = get_worksheet("DATA RESI")
                     sheet_resi.append_row([
                         waktu_input,
-                        nama_user,          # <-- simpen NAMA (YUSUF ZULKARNAEN)
+                        nama_user,
                         no_resi,
                         tanggal_transaksi,
                         alasan,
                         detail_alasan
                     ])
 
-                    # Clear cache data resi biar riwayat langsung update
+                    # Clear cache biar riwayat langsung update
                     get_all_resi.clear()
 
                     st.success(f"Resi {no_resi} berhasil disimpan!")
@@ -300,20 +286,14 @@ else:
                         del st.session_state.hasil_scan
 
     # =================================================================
-    # MENU: RIWAYAT INPUT (SCO)
+    # MENU: RIWAYAT INPUT GUA
     # =================================================================
-    elif menu == "Riwayat Input":
-        st.header("Riwayat Input")
-
-        @st.cache_data(ttl=60)
-        def get_all_resi():
-            sheet_resi = get_worksheet("DATA RESI")
-            return pd.DataFrame(sheet_resi.get_all_records())
+    elif menu == "Riwayat Input Gua":
+        st.header("Riwayat Input Lu")
 
         data_resi = get_all_resi()
 
         if not data_resi.empty:
-            # Filter pakai NAMA (YUSUF ZULKARNAEN)
             data_pribadi = data_resi[data_resi['NAMA SCO'] == nama_user]
             st.dataframe(data_pribadi, use_container_width=True)
         else:
@@ -325,12 +305,7 @@ else:
     elif menu == "Dashboard Admin":
         st.header("Dashboard Master Admin")
 
-        @st.cache_data(ttl=60)
-        def get_all_resi_admin():
-            sheet_resi = get_worksheet("DATA RESI")
-            return pd.DataFrame(sheet_resi.get_all_records())
-
-        data_resi = get_all_resi_admin()
+        data_resi = get_all_resi()
 
         if not data_resi.empty:
             tanggal_unik = data_resi['TANGGAL TRANSAKSI'].unique().tolist()
