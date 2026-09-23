@@ -155,7 +155,7 @@ if not st.session_state.logged_in:
 
     # Dropdown SCO
     pilihan_label = st.selectbox(
-        "Pilih Nama Lu:",
+        "Pilih Nama:",
         labels,
         index=default_idx,
         key="pilih_nama_sco"
