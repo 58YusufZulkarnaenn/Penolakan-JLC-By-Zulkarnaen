@@ -132,7 +132,7 @@ if 'show_admin_login' not in st.session_state:
 # =====================================================================
 if not st.session_state.logged_in:
     st.title("📦 Data Penolakan JLC")
-    st.caption("Pilih nama lu, terus klik 'Masuk' buat mulai kerja.")
+    st.caption("Pilih nama")
 
     # Ambil daftar SCO dari sheet
     try:
@@ -166,7 +166,7 @@ if not st.session_state.logged_in:
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        if st.button("Masuk sebagai SCO", use_container_width=True, type="primary"):
+        if st.button("LOGIN", use_container_width=True, type="primary"):
             if sco_terpilih:
                 st.session_state.logged_in = True
                 st.session_state.is_admin = False
