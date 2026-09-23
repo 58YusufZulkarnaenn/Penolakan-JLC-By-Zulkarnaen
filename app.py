@@ -9,6 +9,17 @@ from barcode_scanner import barcode_scanner
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="App Penolakan Member", layout="wide")
 
+# --- META TAG BIAR KAYAK APP NATIVE ---
+st.markdown("""
+<head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JLC Penolakan">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0056b3">
+</head>
+""", unsafe_allow_html=True)
+
 # --- KUSTOMISASI TAMPILAN (UI/UX) ---
 st.markdown("""
 <style>
