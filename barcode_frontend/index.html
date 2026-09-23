@@ -31,14 +31,14 @@
   /* Container utama kamera */
   #reader { 
     width:100%; 
-    margin-top: -20px;        /* Naikin dikit ke atas */
+    margin-top: -20px;
     margin-bottom: 10px;
   }
   
   /* Video preview — perbesar & atur posisi */
   #reader video {
     border-radius: 12px;
-    width: 100% !important;   /* Full width */
+    width: 100% !important;
     max-height: 400px !important;
     object-fit: cover !important;
     margin-top: 0 !important;
@@ -51,7 +51,7 @@
   
   /* Dashboard (kotak scan overlay) — center & naikin */
   #reader__dashboard {
-    margin-top: -30px !important;  /* Naikin dikit */
+    margin-top: -30px !important;
   }
   
   /* Kotak scan (qrbox) — kasih border biar keliatan jelas */
@@ -149,6 +149,99 @@ function updateCounter() {
 }
 
 // ============================================
+// PILIH KAMERA TERBAIK (buat iPhone biar gak blur)
+// ============================================
+async function pilihKameraTerbaik() {
+  try {
+    // Minta izin kamera dulu (wajib sebelum bisa lihat label device)
+    await navigator.mediaDevices.getUserMedia({ video: true });
+    
+    const devices = await Html5Qrcode.getCameras();
+    console.log("Kamera tersedia:", devices);
+    
+    if (!devices || devices.length === 0) {
+      return { facingMode: "environment" };
+    }
+    
+    // Prioritas 1: cari lensa wide/close/macro (biasanya lebih bagus buat jarak dekat)
+    for (const device of devices) {
+      const label = (device.label || "").toLowerCase();
+      if (label.includes('wide angle') || 
+          label.includes('wide-angle') || 
+          label.includes('close') || 
+          label.includes('macro')) {
+        console.log("Pilih lensa wide/macro:", device.label);
+        return { deviceId: { exact: device.id } };
+      }
+    }
+    
+    // Prioritas 2: kalau ada lebih dari 1 kamera belakang, ambil yang kedua
+    // (seringkali ini lensa wide-angle, bukan ultra-wide)
+    const backCameras = devices.filter(d => {
+      const label = (d.label || "").toLowerCase();
+      return label.includes('back') || 
+             label.includes('belakang') || 
+             label.includes('rear') ||
+             label.includes('environment');
+    });
+    
+    if (backCameras.length > 1) {
+      console.log("Pilih kamera belakang kedua:", backCameras[1].label);
+      return { deviceId: { exact: backCameras[1].id } };
+    } else if (backCameras.length === 1) {
+      console.log("Pilih kamera belakang:", backCameras[0].label);
+      return { deviceId: { exact: backCameras[0].id } };
+    }
+    
+    // Prioritas 3: pakai kamera terakhir (biasanya kamera belakang di iPhone)
+    console.log("Fallback ke kamera terakhir:", devices[devices.length - 1].label);
+    return { deviceId: { exact: devices[devices.length - 1].id } };
+    
+  } catch (err) {
+    console.log("Gagal pilih kamera, fallback:", err);
+    return { facingMode: "environment" };
+  }
+}
+
+// ============================================
+// APPLY FOCUS & ZOOM SETELAH KAMERA NYALA
+// ============================================
+async function applyFocusFix() {
+  try {
+    const track = scanner.getRunningTrack();
+    if (!track) return;
+    
+    const capabilities = track.getCapabilities();
+    console.log("Kamera capabilities:", capabilities);
+    
+    const constraints = { advanced: [{}] };
+    
+    // Coba set zoom ke level menengah (bantu iPhone fokus)
+    if (capabilities.zoom) {
+      const maxZoom = capabilities.zoom.max || 2;
+      const zoomValue = maxZoom > 2 ? 2.0 : maxZoom;
+      constraints.advanced[0].zoom = zoomValue;
+      console.log("Set zoom ke:", zoomValue);
+    }
+    
+    // Coba set focus mode continuous (auto-focus terus-menerus)
+    if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+      constraints.advanced[0].focusMode = 'continuous';
+      console.log("Set focus mode: continuous");
+    }
+    
+    // Apply constraints
+    if (Object.keys(constraints.advanced[0]).length > 0) {
+      await track.applyConstraints(constraints);
+      console.log("Focus fix applied!");
+    }
+    
+  } catch (err) {
+    console.log("Gagal apply focus fix:", err);
+  }
+}
+
+// ============================================
 // START SCANNER
 // ============================================
 document.getElementById("startBtn").addEventListener("click", async () => {
@@ -158,12 +251,17 @@ document.getElementById("startBtn").addEventListener("click", async () => {
   updateStatus("Menyalakan kamera...", "#0056b3");
   
   try {
+    // 1. Pilih kamera terbaik
+    const cameraConfig = await pilihKameraTerbaik();
+    console.log("Config kamera:", cameraConfig);
+    
+    // 2. Mulai scanner
     scanner = new Html5Qrcode("reader");
     await scanner.start(
-      { facingMode: "environment" },
+      cameraConfig,
       { 
         fps: 10, 
-        qrbox: { width: 280, height: 160 }   // Sedikit gede dari sebelumnya
+        qrbox: { width: 280, height: 160 }
       },
       (decodedText) => {
         playBeep();
@@ -188,9 +286,21 @@ document.getElementById("startBtn").addEventListener("click", async () => {
     document.getElementById("startBtn").disabled = false;
     document.getElementById("stopBtn").disabled = false;
     updateStatus("📷 Kamera nyala. Arahin ke barcode...", "#0056b3");
+    
+    // 3. Trik FIX: Reset fokus setelah kamera nyala (delay 1.5s)
+    setTimeout(() => {
+      applyFocusFix();
+    }, 1500);
+    
+    // 4. Coba apply focus fix lagi setelah 3 detik (double tap)
+    setTimeout(() => {
+      applyFocusFix();
+    }, 3000);
+    
   } catch (err) {
     updateStatus("❌ Gagal nyalain kamera: " + err, "red");
     document.getElementById("startBtn").disabled = false;
+    console.error("Error start scanner:", err);
   }
 });
 
