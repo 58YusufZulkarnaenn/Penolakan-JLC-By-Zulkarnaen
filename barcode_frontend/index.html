@@ -5,7 +5,12 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   body { margin:0; padding:0; font-family: sans-serif; background:transparent; }
-  #controls { text-align:center; padding:10px; }
+  
+  #controls { 
+    text-align:center; 
+    padding:10px; 
+  }
+  
   button { 
     background:#0056b3; color:white; border:none; 
     padding:12px 24px; border-radius:8px; 
@@ -18,20 +23,55 @@
     transform: scale(1.02);
   }
   button:disabled { opacity:0.4; cursor:not-allowed; }
-  #reader { width:100%; }
+  
+  /* ============================================
+     FIX POSISI KAMERA
+     ============================================ */
+  
+  /* Container utama kamera */
+  #reader { 
+    width:100%; 
+    margin-top: -20px;        /* Naikin dikit ke atas */
+    margin-bottom: 10px;
+  }
+  
+  /* Video preview — perbesar & atur posisi */
+  #reader video {
+    border-radius: 12px;
+    width: 100% !important;   /* Full width */
+    max-height: 400px !important;
+    object-fit: cover !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Region scan — naikin posisi kotak scan */
+  #reader__scan_region {
+    margin-top: -10px !important;
+  }
+  
+  /* Dashboard (kotak scan overlay) — center & naikin */
+  #reader__dashboard {
+    margin-top: -30px !important;  /* Naikin dikit */
+  }
+  
+  /* Kotak scan (qrbox) — kasih border biar keliatan jelas */
+  #reader__scan_region img {
+    margin-top: 10px;
+  }
+  
+  /* ============================================ */
+  
   #status { 
     text-align:center; padding:10px; 
     font-weight:bold; font-size:14px;
     color: #333;
   }
+  
   #counter {
     text-align:center; padding:8px;
     background:#e8f4ff; border-radius:8px;
     font-size:13px; font-weight:bold; color:#0056b3;
     margin: 8px 0;
-  }
-  #reader video {
-    border-radius: 10px;
   }
 </style>
 </head>
@@ -50,7 +90,7 @@ let isRunning = false;
 let scanCount = 0;
 
 // ============================================
-// BEEP SOUND — pakai Web Audio API (gak perlu file .mp3)
+// BEEP SOUND — pakai Web Audio API
 // ============================================
 function playBeep() {
   try {
@@ -61,18 +101,15 @@ function playBeep() {
     osc.connect(gain);
     gain.connect(ctx.destination);
     
-    // Frekuensi 1000 Hz = bunyi "tit" kayak kasir
     osc.frequency.value = 1000;
     osc.type = "square";
     
-    // Volume + durasi
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
     
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.15);
     
-    // Auto cleanup
     setTimeout(() => ctx.close(), 300);
   } catch (e) {
     console.log("Beep gagal:", e);
@@ -80,11 +117,11 @@ function playBeep() {
 }
 
 // ============================================
-// VIBRASI HP (bonus)
+// VIBRASI HP
 // ============================================
 function vibrate() {
   if (navigator.vibrate) {
-    navigator.vibrate(150); // getar 150ms
+    navigator.vibrate(150);
   }
 }
 
@@ -99,7 +136,7 @@ function sendToStreamlit(payload) {
 }
 
 sendToStreamlit({ type: "streamlit:componentReady", apiVersion: 1 });
-sendToStreamlit({ type: "streamlit:setFrameHeight", height: 450 });
+sendToStreamlit({ type: "streamlit:setFrameHeight", height: 520 });
 
 function updateStatus(msg, color) {
   const el = document.getElementById("status");
@@ -124,9 +161,11 @@ document.getElementById("startBtn").addEventListener("click", async () => {
     scanner = new Html5Qrcode("reader");
     await scanner.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 150 } },
+      { 
+        fps: 10, 
+        qrbox: { width: 280, height: 160 }   // Sedikit gede dari sebelumnya
+      },
       (decodedText) => {
-        // === BEEP + VIBRATE PAS KEBACA ===
         playBeep();
         vibrate();
         
@@ -135,13 +174,11 @@ document.getElementById("startBtn").addEventListener("click", async () => {
         
         updateStatus("✅ " + decodedText, "green");
         
-        // Kirim hasil ke Python
         sendToStreamlit({ 
           type: "streamlit:setComponentValue", 
           value: decodedText
         });
         
-        // Auto matiin kamera setelah berhasil
         stopScanner();
       },
       () => { /* abaikan error per frame */ }
