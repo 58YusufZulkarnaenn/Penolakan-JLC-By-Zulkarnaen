@@ -227,7 +227,7 @@ else:
     if st.session_state.is_admin:
         menu = st.sidebar.radio("Pilih Menu", ["Dashboard Admin"])
     else:
-        menu = st.sidebar.radio("Pilih Menu", ["Input Resi Baru", "Riwayat Input Gua"])
+        menu = st.sidebar.radio("Pilih Menu", ["Input Resi Baru", "Riwayat Input"])
 
     # =================================================================
     # MENU: INPUT RESI BARU (SCO)
@@ -300,10 +300,10 @@ else:
                         del st.session_state.hasil_scan
 
     # =================================================================
-    # MENU: RIWAYAT INPUT GUA (SCO)
+    # MENU: RIWAYAT INPUT (SCO)
     # =================================================================
-    elif menu == "Riwayat Input Gua":
-        st.header("Riwayat Input Lu")
+    elif menu == "Riwayat Input":
+        st.header("Riwayat Input")
 
         @st.cache_data(ttl=60)
         def get_all_resi():
