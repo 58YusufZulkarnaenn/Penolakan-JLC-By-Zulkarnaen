@@ -101,12 +101,23 @@ def login_admin(username, password):
     return None
 
 # =====================================================================
-# FUNGSI CACHE DATA RESI (LEVEL ATAS — BISA DIAKSES SEMUA MENU)
+# FUNGSI CACHE DATA RESI (SUDAH DIOPTIMASI)
 # =====================================================================
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=3600) # <-- ttl dinaikin jadi 1 jam (3600 detik)
 def get_all_resi():
     sheet_resi = get_worksheet("DATA RESI")
-    return pd.DataFrame(sheet_resi.get_all_records())
+    
+    # get_all_values() jauh lebih ringan dan cepat dibanding get_all_records()
+    raw_data = sheet_resi.get_all_values() 
+    
+    if not raw_data:
+        return pd.DataFrame()
+    
+    # Baris pertama adalah header, sisanya data
+    headers = raw_data[0]
+    data_rows = raw_data[1:]
+    
+    return pd.DataFrame(data_rows, columns=headers)
 
 # =====================================================================
 # STATE MANAGEMENT
