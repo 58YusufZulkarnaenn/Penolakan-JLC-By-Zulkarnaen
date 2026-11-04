@@ -103,11 +103,20 @@ def login_admin(username, password):
 # =====================================================================
 # FUNGSI CACHE DATA RESI (FIXED & OPTIMIZED)
 # =====================================================================
-@st.cache_data(ttl=3600) # <-- TETAP 1 JAM BIAR CEPET
+@st.cache_data(ttl=3600) 
 def get_all_resi():
     sheet_resi = get_worksheet("DATA RESI")
-    # Balik ke get_all_records() biar mapping kolom & tipe data akurat
-    return pd.DataFrame(sheet_resi.get_all_records())
+    df = pd.DataFrame(sheet_resi.get_all_records())
+    
+    if not df.empty:
+        # ANTI BUG: Bersihin nama kolom dari spasi gaib & bikin kapital semua
+        df.columns = df.columns.str.strip().str.upper()
+        
+        # Bersihin isi kolom NAMA SCO (buang spasi, jadikan kapital)
+        if 'NAMA SCO' in df.columns:
+            df['NAMA SCO'] = df['NAMA SCO'].astype(str).str.strip().str.upper()
+            
+    return df
 
 # =====================================================================
 # STATE MANAGEMENT
@@ -195,7 +204,8 @@ if not st.session_state.logged_in:
 # =====================================================================
 else:
     user_info = st.session_state.user_data
-    nama_user = user_info.get('NAMA SCO', '')
+    # Paksa nama user jadi kapital & buang spasi biar sinkron sama filter
+    nama_user = str(user_info.get('NAMA SCO', '')).strip().upper()
     role_user = user_info.get('ROLE', '')
 
     st.sidebar.title(f"Halo, {nama_user}!")
@@ -294,9 +304,9 @@ else:
 
         data_resi = get_all_resi()
 
-        if not data_resi.empty:
-            # FIX: Pakai .str.strip() buat jaga-jaga kalau ada spasi gaib di sheet
-            data_pribadi = data_resi[data_resi['NAMA SCO'].astype(str).str.strip() == str(nama_user).strip()]
+        if not data_resi.empty and 'NAMA SCO' in data_resi.columns:
+            # Filter pake data yang udah dibersihin (huruf besar semua)
+            data_pribadi = data_resi[data_resi['NAMA SCO'] == nama_user]
             st.dataframe(data_pribadi, use_container_width=True)
         else:
             st.info("Belum ada data yang diinput.")
