@@ -101,23 +101,13 @@ def login_admin(username, password):
     return None
 
 # =====================================================================
-# FUNGSI CACHE DATA RESI (SUDAH DIOPTIMASI)
+# FUNGSI CACHE DATA RESI (FIXED & OPTIMIZED)
 # =====================================================================
-@st.cache_data(ttl=3600) # <-- ttl dinaikin jadi 1 jam (3600 detik)
+@st.cache_data(ttl=3600) # <-- TETAP 1 JAM BIAR CEPET
 def get_all_resi():
     sheet_resi = get_worksheet("DATA RESI")
-    
-    # get_all_values() jauh lebih ringan dan cepat dibanding get_all_records()
-    raw_data = sheet_resi.get_all_values() 
-    
-    if not raw_data:
-        return pd.DataFrame()
-    
-    # Baris pertama adalah header, sisanya data
-    headers = raw_data[0]
-    data_rows = raw_data[1:]
-    
-    return pd.DataFrame(data_rows, columns=headers)
+    # Balik ke get_all_records() biar mapping kolom & tipe data akurat
+    return pd.DataFrame(sheet_resi.get_all_records())
 
 # =====================================================================
 # STATE MANAGEMENT
@@ -305,7 +295,8 @@ else:
         data_resi = get_all_resi()
 
         if not data_resi.empty:
-            data_pribadi = data_resi[data_resi['NAMA SCO'] == nama_user]
+            # FIX: Pakai .str.strip() buat jaga-jaga kalau ada spasi gaib di sheet
+            data_pribadi = data_resi[data_resi['NAMA SCO'].astype(str).str.strip() == str(nama_user).strip()]
             st.dataframe(data_pribadi, use_container_width=True)
         else:
             st.info("Belum ada data yang diinput.")
