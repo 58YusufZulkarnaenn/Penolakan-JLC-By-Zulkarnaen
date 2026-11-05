@@ -8,11 +8,16 @@ import pytz
 from barcode_scanner import barcode_scanner
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Data Penolakan JLC", layout="wide")
+st.set_page_config(
+    page_title="Data Penolakan JLC",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 # =====================================================================
-# TAMPILAN (UI/UX)
-# Palet: Ink #0A1B33 | Biru JLC #0056b3 | Mist #F4F6FA | Garis #DCE3EE | Emas #B8913A (aksen tipis)
+# TAMPILAN GELAP PERMANEN
+# Palet: Latar #0A1426 | Permukaan #111E36 | Garis #223454 | Teks #E8EEF8
+#        Biru JLC #0056b3 | Emas #D4AA4F (aksen tipis)
 # Font : Sora (judul) + Plus Jakarta Sans (isi)
 # =====================================================================
 st.markdown("""
@@ -20,13 +25,17 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    --ink: #0A1B33;
+    color-scheme: dark;
+    --bg: #0A1426;
+    --surface: #111E36;
+    --surface-2: #16263F;
+    --line: #223454;
+    --text: #E8EEF8;
+    --muted: #8FA3C0;
     --brand: #0056b3;
     --brand-dark: #004494;
-    --mist: #F4F6FA;
-    --line: #DCE3EE;
-    --gold: #B8913A;
-    --muted: #5B6B82;
+    --brand-light: #6FB1FF;
+    --gold: #D4AA4F;
 }
 
 /* ---------- Sembunyikan elemen Streamlit / GitHub ---------- */
@@ -38,6 +47,9 @@ footer,
 [data-testid="stAppDeployButton"],
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
+[data-testid="stSidebar"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stExpandSidebarButton"],
 .stDeployButton,
 [class*="viewerBadge"],
 [class*="profileContainer"],
@@ -46,35 +58,41 @@ a[href*="github.com"] {
     display: none !important;
     visibility: hidden !important;
 }
-header[data-testid="stHeader"] {
-    background: transparent !important;
-}
+header[data-testid="stHeader"] { background: transparent !important; }
 
 /* ---------- Dasar ---------- */
-.stApp { background: var(--mist); }
-.block-container { padding-top: 2.2rem !important; padding-bottom: 3rem !important; max-width: 1100px; }
+.stApp { background: var(--bg) !important; color: var(--text); }
+.block-container { padding-top: 1.6rem !important; padding-bottom: 3rem !important; max-width: 1100px; }
 p, label, input, textarea, button, li, td, th, .stMarkdown, [data-baseweb="select"] {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
-h1, h2, h3, h4 { font-family: 'Sora', sans-serif !important; color: var(--ink); letter-spacing: -0.01em; }
+h1, h2, h3, h4 { font-family: 'Sora', sans-serif !important; color: var(--text) !important; letter-spacing: -0.01em; }
 [data-testid="InputInstructions"] { display: none !important; }
+label p { font-weight: 600 !important; color: var(--text) !important; font-size: .9rem !important; }
+::placeholder { color: #6F83A3 !important; opacity: 1 !important; }
+
+/* ---------- Top bar ---------- */
+.topbar { display: flex; align-items: center; gap: .85rem; padding: .2rem 0 .6rem 0; }
+.topbar .brand-mark { margin: 0; }
+.tb-name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.02rem; color: var(--text); line-height: 1.25; word-break: break-word; }
+.tb-role { font-size: .8rem; color: var(--muted); }
 
 /* ---------- Judul halaman ---------- */
-.page-head { margin-bottom: 1.4rem; }
-.page-head h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 .25rem 0; padding: 0; }
+.page-head { margin: .6rem 0 1.3rem 0; }
+.page-head h1 { font-size: 1.7rem; font-weight: 700; margin: 0 0 .25rem 0; padding: 0; }
 .page-head p { color: var(--muted); margin: 0; font-size: .95rem; }
-.sec-title { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.02rem; color: var(--ink); margin: 1.6rem 0 .2rem 0; }
+.sec-title { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.02rem; color: var(--text); margin: 1.6rem 0 .2rem 0; }
 .sec-sub { color: var(--muted); font-size: .88rem; margin-bottom: .6rem; }
 
-/* ---------- Login ---------- */
-.login-hero { text-align: center; padding: 1.2rem 0 1.4rem 0; }
+/* ---------- Logo & login ---------- */
 .brand-mark {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 58px; height: 58px; border-radius: 16px;
-    background: var(--ink); color: #fff;
-    font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.05rem; letter-spacing: .02em;
-    margin-bottom: 1rem;
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: var(--brand); color: #fff;
+    font-family: 'Sora', sans-serif; font-weight: 700; font-size: .85rem; letter-spacing: .02em;
 }
+.login-hero { text-align: center; padding: 1.2rem 0 1.4rem 0; }
+.login-hero .brand-mark { width: 60px; height: 60px; border-radius: 17px; font-size: 1.1rem; margin-bottom: 1rem; }
 .login-hero h1 { font-size: 1.9rem; font-weight: 700; margin: 0 0 .4rem 0; padding: 0; }
 .login-hero p { color: var(--muted); margin: 0 auto; max-width: 340px; font-size: .95rem; }
 .gold-rule { width: 44px; height: 3px; background: var(--gold); border-radius: 2px; margin: 1.1rem auto 0 auto; }
@@ -94,53 +112,54 @@ div.stButton > button,
 div.stButton > button:hover,
 [data-testid="stForm"] button:hover,
 .stDownloadButton > button:hover {
-    background-color: var(--brand-dark) !important;
-    border-color: var(--brand-dark) !important;
+    background-color: #0A6AD6 !important;
+    border-color: #0A6AD6 !important;
     color: #fff !important;
-    box-shadow: 0 6px 16px rgba(0, 86, 179, .25) !important;
+    box-shadow: 0 6px 18px rgba(0, 86, 179, .4) !important;
 }
 div.stButton > button:focus-visible,
-[data-testid="stForm"] button:focus-visible { outline: 3px solid rgba(0, 86, 179, .35) !important; outline-offset: 2px; }
+[data-testid="stForm"] button:focus-visible { outline: 3px solid rgba(111, 177, 255, .5) !important; outline-offset: 2px; }
 div.stButton > button[kind="secondary"],
 div.stButton > button[data-testid="stBaseButton-secondary"] {
-    background-color: #fff !important;
-    color: var(--brand) !important;
-    border: 1px solid var(--line) !important;
+    background-color: transparent !important;
+    color: var(--text) !important;
+    border: 1px solid #2E4469 !important;
 }
 div.stButton > button[kind="secondary"]:hover,
 div.stButton > button[data-testid="stBaseButton-secondary"]:hover {
-    background-color: #EEF4FB !important;
-    color: var(--brand-dark) !important;
-    border-color: var(--brand) !important;
+    background-color: var(--surface-2) !important;
+    border-color: var(--brand-light) !important;
+    color: #fff !important;
     box-shadow: none !important;
 }
 
 /* ---------- Form & input ---------- */
 [data-testid="stForm"] {
-    background: #fff !important;
+    background: var(--surface) !important;
     border: 1px solid var(--line) !important;
     border-radius: 16px !important;
     padding: 1.6rem !important;
-    box-shadow: 0 10px 30px rgba(10, 27, 51, .06) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .35) !important;
 }
 input, textarea,
 div[data-baseweb="select"] > div,
 div[data-baseweb="input"] > div {
-    background-color: #fff !important;
-    border: 1.5px solid #CBD5E3 !important;
+    background-color: #0D182C !important;
+    color: var(--text) !important;
+    border: 1.5px solid #2A3F63 !important;
     border-radius: 10px !important;
 }
+div[data-baseweb="select"] * { color: var(--text) !important; }
 div[data-baseweb="input"] > div:focus-within,
 div[data-baseweb="select"] > div:focus-within {
-    border-color: var(--brand) !important;
-    box-shadow: 0 0 0 3px rgba(0, 86, 179, .15) !important;
+    border-color: var(--brand-light) !important;
+    box-shadow: 0 0 0 3px rgba(111, 177, 255, .2) !important;
 }
-label p { font-weight: 600 !important; color: var(--ink) !important; font-size: .9rem !important; }
 
 /* ---------- Kartu statistik ---------- */
-.stat { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 1.05rem 1.25rem; height: 100%; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 1.05rem 1.25rem; height: 100%; }
 .stat-label { color: var(--muted); font-size: .82rem; font-weight: 600; margin-bottom: .35rem; }
-.stat-val { font-family: 'Sora', sans-serif; color: var(--ink); font-size: 1.85rem; font-weight: 700; line-height: 1.15; }
+.stat-val { font-family: 'Sora', sans-serif; color: var(--text); font-size: 1.85rem; font-weight: 700; line-height: 1.15; }
 .stat-val.small { font-size: 1rem; line-height: 1.35; padding-top: .35rem; }
 
 /* ---------- Tabel ---------- */
@@ -148,71 +167,16 @@ label p { font-weight: 600 !important; color: var(--ink) !important; font-size: 
     border: 1px solid var(--line);
     border-radius: 14px;
     overflow: hidden;
-    background: #fff;
 }
 
-/* ---------- Tab ---------- */
+/* ---------- Tab & menu ---------- */
 button[data-baseweb="tab"] { font-weight: 600 !important; }
-button[data-baseweb="tab"][aria-selected="true"] { color: var(--brand) !important; }
-div[data-baseweb="tab-highlight"] { background-color: var(--brand) !important; }
-
-/* ---------- Sidebar ---------- */
-[data-testid="stSidebar"],
-[data-testid="stSidebar"] > div,
-[data-testid="stSidebarContent"],
-[data-testid="stSidebarUserContent"] { background: var(--ink) !important; border-right: none !important; }
-.sb-brand { display: flex; align-items: center; gap: .8rem; padding: .4rem 0 0 0; }
-.sb-mark {
-    width: 40px; height: 40px; border-radius: 11px; background: #fff; color: var(--ink) !important;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Sora', sans-serif; font-weight: 700; font-size: .85rem;
-}
-.sb-mark, .sb-mark * { color: var(--ink) !important; }
-.sb-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem; color: #fff !important; line-height: 1.2; }
-.sb-sub { font-size: .78rem; color: #8FA3C0 !important; }
-.sb-rule { width: 36px; height: 3px; background: var(--gold); border-radius: 2px; margin: 1.1rem 0 1.1rem 0; }
-.sb-user {
-    display: flex; align-items: center; gap: .75rem;
-    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
-    border-radius: 12px; padding: .7rem .8rem; margin-bottom: 1.2rem;
-}
-.sb-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: var(--brand);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: .85rem; color: #fff !important; flex-shrink: 0;
-}
-.sb-uname { font-weight: 700; font-size: .88rem; color: #fff !important; line-height: 1.25; word-break: break-word; }
-.sb-urole { font-size: .75rem; color: #8FA3C0 !important; }
-
-[data-testid="stSidebar"] [role="radiogroup"] { gap: .25rem; }
-[data-testid="stSidebar"] label[data-baseweb="radio"] {
-    width: 100%; padding: .65rem .85rem; border-radius: 10px; cursor: pointer; margin: 0;
-    transition: background-color .2s ease;
-}
-[data-testid="stSidebar"] label[data-baseweb="radio"] p { color: #B7C4D9 !important; font-weight: 600 !important; font-size: .92rem !important; }
-[data-testid="stSidebar"] label[data-baseweb="radio"]:hover { background: rgba(255,255,255,.06); }
-[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) {
-    background: rgba(255,255,255,.1);
-    box-shadow: inset 3px 0 0 var(--gold);
-}
-[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) p { color: #fff !important; }
-
-[data-testid="stSidebar"] div.stButton > button {
-    background-color: transparent !important;
-    color: #E6ECF5 !important;
-    border: 1px solid rgba(255,255,255,.25) !important;
-    box-shadow: none !important;
-    width: 100%;
-}
-[data-testid="stSidebar"] div.stButton > button:hover {
-    background-color: rgba(255,255,255,.08) !important;
-    border-color: rgba(255,255,255,.5) !important;
-    color: #fff !important;
-}
+button[data-baseweb="tab"][aria-selected="true"] { color: var(--brand-light) !important; }
+div[data-baseweb="tab-highlight"] { background-color: var(--brand-light) !important; }
 
 /* ---------- Mobile ---------- */
 @media (max-width: 640px) {
-    .block-container { padding-left: 1rem !important; padding-right: 1rem !important; padding-top: 1.4rem !important; }
+    .block-container { padding-left: 1rem !important; padding-right: 1rem !important; padding-top: 1.2rem !important; }
     .page-head h1 { font-size: 1.45rem; }
     .stat-val { font-size: 1.5rem; }
 }
@@ -416,32 +380,39 @@ else:
     if not nama_user:
         nama_user = str(user_info.get('USERNAME', '')).strip().upper()
 
-    inisial = "".join(w[0] for w in nama_user.split()[:2]) or "?"
     peran = "Administrator" if st.session_state.is_admin else "Sales Counter Officer"
 
-    st.sidebar.markdown(
-        '<div class="sb-brand"><div class="sb-mark">JLC</div>'
-        '<div><div class="sb-title">Data Penolakan</div><div class="sb-sub">Member JLC</div></div></div>'
-        '<div class="sb-rule"></div>'
-        f'<div class="sb-user"><div class="sb-avatar">{esc(inisial)}</div>'
-        f'<div><div class="sb-uname">{esc(nama_user)}</div><div class="sb-urole">{esc(peran)}</div></div></div>',
-        unsafe_allow_html=True,
-    )
+    # --- TOP BAR (nama user + keluar) ---
+    bar_kiri, bar_kanan = st.columns([5, 1.2])
+    with bar_kiri:
+        st.markdown(
+            '<div class="topbar"><div class="brand-mark">JLC</div>'
+            f'<div><div class="tb-name">{esc(nama_user)}</div><div class="tb-role">{esc(peran)}</div></div></div>',
+            unsafe_allow_html=True,
+        )
+    with bar_kanan:
+        if st.button("Keluar", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.user_data = None
+            st.session_state.is_admin = False
+            if "hasil_scan" in st.session_state:
+                del st.session_state.hasil_scan
+            st.rerun()
 
-    # --- MENU ---
+    # --- MENU (di halaman utama, bukan sidebar, biar selalu kelihatan di HP) ---
     if st.session_state.is_admin:
-        menu = st.sidebar.radio("Menu", ["Dashboard"], label_visibility="collapsed")
+        menu = "Dashboard"
     else:
-        menu = st.sidebar.radio("Menu", ["Input Resi", "Riwayat Saya"], label_visibility="collapsed")
-
-    st.sidebar.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
-    if st.sidebar.button("Keluar"):
-        st.session_state.logged_in = False
-        st.session_state.user_data = None
-        st.session_state.is_admin = False
-        if "hasil_scan" in st.session_state:
-            del st.session_state.hasil_scan
-        st.rerun()
+        opsi_menu = ["Input Resi", "Riwayat Saya"]
+        try:
+            menu = st.segmented_control(
+                "Menu", opsi_menu, default=opsi_menu[0],
+                label_visibility="collapsed", key="menu_nav",
+            ) or opsi_menu[0]
+        except AttributeError:
+            # Streamlit versi lama tidak punya segmented_control
+            menu = st.radio("Menu", opsi_menu, horizontal=True,
+                            label_visibility="collapsed", key="menu_nav_radio")
 
     # =================================================================
     # MENU: INPUT RESI
