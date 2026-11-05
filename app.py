@@ -101,31 +101,26 @@ def login_admin(username, password):
     return None
 
 # =====================================================================
-# FUNGSI CACHE DATA RESI (FIXED TOTAL PAKE GET_ALL_VALUES)
+# FUNGSI CACHE DATA RESI
 # =====================================================================
-# Gua hapus cache 1 jam dulu biar lu bisa test langsung tanpa nyangkut
-@st.cache_data(ttl=10) 
+@st.cache_data(ttl=10)
 def get_all_resi():
     sheet_resi = get_worksheet("DATA RESI")
     raw_data = sheet_resi.get_all_values()
-    
+
     if not raw_data:
         return pd.DataFrame()
-    
-    # Ambil baris pertama sebagai header, sisanya data
+
     headers = [str(h).strip().upper() for h in raw_data[0]]
     data_rows = raw_data[1:]
-    
-    # Buat DataFrame
+
     df = pd.DataFrame(data_rows, columns=headers)
-    
-    # Buang baris yang kosong semua
     df = df.dropna(how='all')
-    
-    # Pastiin kolom NAMA SCO bersih dari spasi dan kapital
+
+    # Kolom bantu khusus buat filter (kolom asli NAMA SCO TIDAK diubah)
     if 'NAMA SCO' in df.columns:
-        df['NAMA SCO'] = df['NAMA SCO'].astype(str).str.strip().str.upper()
-        
+        df['_KEY_SCO'] = df['NAMA SCO'].astype(str).str.strip().str.upper()
+
     return df
 
 # =====================================================================
@@ -214,9 +209,10 @@ if not st.session_state.logged_in:
 # =====================================================================
 else:
     user_info = st.session_state.user_data
-    # Paksa nama user jadi kapital & buang spasi biar sinkron sama filter
+    # Nama user kapital & tanpa spasi; fallback ke USERNAME kalau NAMA SCO kosong
     nama_user = str(user_info.get('NAMA SCO', '')).strip().upper()
-    role_user = user_info.get('ROLE', '')
+    if not nama_user:
+        nama_user = str(user_info.get('USERNAME', '')).strip().upper()
 
     st.sidebar.title(f"Halo, {nama_user}!")
     if st.session_state.is_admin:
@@ -298,7 +294,6 @@ else:
                         detail_alasan
                     ])
 
-                    # Clear cache biar riwayat langsung update
                     get_all_resi.clear()
 
                     st.success(f"Resi {no_resi} berhasil disimpan!")
@@ -314,12 +309,19 @@ else:
 
         data_resi = get_all_resi()
 
-        # Filter pake data yang udah dibersihin (huruf besar semua)
-        if not data_resi.empty and 'NAMA SCO' in data_resi.columns:
-            data_pribadi = data_resi[data_resi['NAMA SCO'] == nama_user]
-            st.dataframe(data_pribadi, use_container_width=True)
-        else:
+        if data_resi.empty or '_KEY_SCO' not in data_resi.columns:
             st.info("Belum ada data yang diinput.")
+        else:
+            # Filter murni baca-saja: bandingin kolom bantu, kolom NAMA SCO asli tidak disentuh
+            mask = data_resi['_KEY_SCO'] == nama_user
+            data_pribadi = data_resi.loc[mask].drop(columns=['_KEY_SCO']).reset_index(drop=True)
+
+            st.caption(f"Menampilkan {len(data_pribadi)} data milik lu dari total {len(data_resi)} baris di sheet.")
+
+            if data_pribadi.empty:
+                st.info("Belum ada data yang lu input.")
+            else:
+                st.dataframe(data_pribadi, use_container_width=True)
 
     # =================================================================
     # MENU: DASHBOARD ADMIN
@@ -330,6 +332,8 @@ else:
         data_resi = get_all_resi()
 
         if not data_resi.empty:
+            data_resi = data_resi.drop(columns=['_KEY_SCO'], errors='ignore')
+
             tanggal_unik = data_resi['TANGGAL TRANSAKSI'].unique().tolist()
             tanggal_unik.insert(0, "Semua Tanggal")
             pilih_tanggal = st.selectbox("Filter Tanggal Transaksi", tanggal_unik)
