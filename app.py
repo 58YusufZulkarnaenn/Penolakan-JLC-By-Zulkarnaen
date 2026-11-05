@@ -157,8 +157,10 @@ button[data-baseweb="tab"][aria-selected="true"] { color: var(--brand) !importan
 div[data-baseweb="tab-highlight"] { background-color: var(--brand) !important; }
 
 /* ---------- Sidebar ---------- */
-[data-testid="stSidebar"] { background: var(--ink) !important; border-right: none !important; }
-[data-testid="stSidebar"] * { color: #E6ECF5; }
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebarContent"],
+[data-testid="stSidebarUserContent"] { background: var(--ink) !important; border-right: none !important; }
 .sb-brand { display: flex; align-items: center; gap: .8rem; padding: .4rem 0 0 0; }
 .sb-mark {
     width: 40px; height: 40px; border-radius: 11px; background: #fff; color: var(--ink) !important;
@@ -187,7 +189,6 @@ div[data-baseweb="tab-highlight"] { background-color: var(--brand) !important; }
     width: 100%; padding: .65rem .85rem; border-radius: 10px; cursor: pointer; margin: 0;
     transition: background-color .2s ease;
 }
-[data-testid="stSidebar"] label[data-baseweb="radio"] > div:first-child { display: none !important; }
 [data-testid="stSidebar"] label[data-baseweb="radio"] p { color: #B7C4D9 !important; font-weight: 600 !important; font-size: .92rem !important; }
 [data-testid="stSidebar"] label[data-baseweb="radio"]:hover { background: rgba(255,255,255,.06); }
 [data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) {
